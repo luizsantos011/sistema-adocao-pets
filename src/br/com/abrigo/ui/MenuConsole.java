@@ -1,11 +1,19 @@
 package br.com.abrigo.ui;
 
+import br.com.abrigo.infrastructure.FileFormularioRepository;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class MenuConsole {
+    FileFormularioRepository fileFormularioRepository;
     Scanner sc = new Scanner(System.in);
 
-    public MenuConsole() {}
+    public MenuConsole(FileFormularioRepository fileFormularioRepository) {
+        this.fileFormularioRepository = fileFormularioRepository;
+    }
 
     public void carregarMenu () {
         int opcao = 0;
@@ -36,7 +44,20 @@ public class MenuConsole {
 
     private void processarOpcao(int opcao) {
         switch (opcao) {
-            case 1 -> System.out.println("\nCadastrar novo pet");
+            case 1 -> {
+                try{
+                    List<String> respostas = new ArrayList<>();
+                    System.out.print("\n");
+                    for(String p : fileFormularioRepository.carregarPerguntas()) {
+                        System.out.println(p);
+                        String resposta = sc.nextLine();
+                        respostas.add(resposta);
+                    }
+                    System.out.print("\n");
+                }catch(IOException e) {
+                    System.out.println("Erro ao carregar o formulário: " + e.getMessage());
+                }
+            }
             case 2 -> System.out.println("\nAlterar os dados do pet cadastrado");
             case 3 -> System.out.println("\nDeletar os pets cadastrados");
             case 4 -> System.out.println("\nListar todos os pets cadastrados");
