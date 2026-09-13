@@ -1,6 +1,7 @@
 package br.com.abrigo.ui;
 
 import br.com.abrigo.domain.repository.FormularioRepositorio;
+import br.com.abrigo.service.PetServico;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,10 +10,12 @@ import java.util.Scanner;
 
 public class MenuConsole {
     FormularioRepositorio formularioRepositorioArquivo;
+    PetServico petServico;
     Scanner sc = new Scanner(System.in);
 
-    public MenuConsole(FormularioRepositorio formularioRepositorioArquivo) {
+    public MenuConsole(FormularioRepositorio formularioRepositorioArquivo, PetServico petServico) {
         this.formularioRepositorioArquivo = formularioRepositorioArquivo;
+        this.petServico = petServico;
     }
 
     public void carregarMenu () {
@@ -53,9 +56,12 @@ public class MenuConsole {
                         String resposta = sc.nextLine();
                         respostas.add(resposta);
                     }
+                    petServico.cadastrarPet(respostas);
                     System.out.print("\n");
                 }catch(IOException e) {
                     System.out.println("Erro ao carregar o formulário: " + e.getMessage());
+                }catch (IllegalArgumentException e) {
+                    System.out.println("Erro ao cadastrar o pet: " + e.getMessage());
                 }
             }
             case 2 -> System.out.println("\nAlterar os dados do pet cadastrado");

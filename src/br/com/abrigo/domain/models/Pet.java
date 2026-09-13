@@ -6,8 +6,9 @@ import br.com.abrigo.domain.enums.TipoPet;
 import java.text.Normalizer;
 import java.util.regex.*;
 
-public class Pet {
+public class Pet{
     private String nome;
+    private String sobrenome;
     private SexoPet sexo;
     private TipoPet tipo;
     private Endereco endereco;
@@ -16,9 +17,10 @@ public class Pet {
     private String raca;
     private static final String NAO_INFORMADO = "Não informado";
 
-    public Pet(String nome, SexoPet sexoPet, TipoPet tipoPet, Endereco endereco,
+    public Pet(String nome, String sobrenome, TipoPet tipoPet, SexoPet sexoPet, Endereco endereco,
                Double idade, Double pesoAproximado, String raca) {
         this.nome = validarNome(nome);
+        this.sobrenome = validarSobrenome(sobrenome);
         this.sexo = sexoPet;
         this.tipo = tipoPet;
         this.endereco = endereco;
@@ -32,6 +34,12 @@ public class Pet {
         String nomeNormalizado = Normalizer.normalize(nome, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
         if (!nomeNormalizado.matches("^[A-Za-z\\s]+$")) throw new IllegalArgumentException("Nome inválido");
         return nome;
+    }
+    private String validarSobrenome(String sobrenome) {
+        if (sobrenome == null || sobrenome.isBlank()) return NAO_INFORMADO;
+        String sobrenomeNormalizado = Normalizer.normalize(sobrenome, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+        if (!sobrenomeNormalizado.matches("^[A-Za-z\\s]+$")) throw new IllegalArgumentException("Sobrenome inválido");
+        return sobrenome;
     }
     private Double validarPeso(Double peso) {
         if (peso == null) return null;
