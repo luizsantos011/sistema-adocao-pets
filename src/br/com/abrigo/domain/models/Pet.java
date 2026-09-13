@@ -64,6 +64,10 @@ public class Pet{
         return nome;
     }
 
+    public String getSobrenome() {
+        return sobrenome;
+    }
+
     public SexoPet getSexo() {
         return sexo;
     }
@@ -86,5 +90,30 @@ public class Pet{
 
     public String getRaca() {
         return raca;
+    }
+
+    public String toString() {
+        return nome+tipo+sexo+endereco.toString()+idade+pesoAproximado+raca;
+    }
+
+    public String paraFormatoArquivo() {
+        String nomeExibicao = sobrenome != null ? nome + " " + sobrenome : nome;
+
+        return String.format(
+                "1 - %s\n" +
+                        "2 - %s\n" +
+                        "3 - %s\n" +
+                        "4 - %s\n" +
+                        "5 - %s\n" +
+                        "6 - %s\n" +
+                        "7 - %s",
+                nomeExibicao,
+                tipo != null ? tipo : NAO_INFORMADO,
+                sexo != null ? sexo : NAO_INFORMADO,
+                endereco != null ? endereco.paraFormatoArquivo() : NAO_INFORMADO,
+                idade != null ? (idade < 1 ? (int)(idade * 12) + " meses" : idade.intValue() + " anos") : NAO_INFORMADO,
+                pesoAproximado != null ? pesoAproximado + "kg" : NAO_INFORMADO,
+                raca != null ? raca : NAO_INFORMADO
+        );
     }
 }

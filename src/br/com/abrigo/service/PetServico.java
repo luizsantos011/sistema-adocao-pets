@@ -6,6 +6,7 @@ import br.com.abrigo.domain.models.Endereco;
 import br.com.abrigo.domain.models.Pet;
 import br.com.abrigo.domain.repository.PetRepositorio;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class PetServico {
@@ -18,7 +19,8 @@ public class PetServico {
     public void cadastrarPet(List<String> respostas){
         String[] nomeCompleto = extrairPartes(respostas.get(0), "\\s+");
         String nome = nomeCompleto.length > 0 ? nomeCompleto[0] : null;
-        String sobrenome = nomeCompleto.length > 1 ? nomeCompleto[1] : null;
+        String sobrenome = nomeCompleto.length > 1
+                ? String.join(" ", Arrays.copyOfRange(nomeCompleto, 1, nomeCompleto.length)) : null;
         TipoPet tipo = parseEnum(TipoPet.class, respostas.get(1));
         SexoPet sexo = parseEnum(SexoPet.class, respostas.get(2));
         Endereco endereco = parseEndereco(respostas.get(3));
