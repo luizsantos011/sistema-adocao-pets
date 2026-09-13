@@ -1,12 +1,12 @@
 package br.com.abrigo.ui;
 
-import br.com.abrigo.infrastructure.FileFormularioRepository;
+import br.com.abrigo.infrastructure.FormularioRepositorioArquivo;
 
 public class Main {
     public static void main(String[] args) {
         try{
-            FileFormularioRepository fileFormularioRepository = new FileFormularioRepository();
-            MenuConsole mc = new MenuConsole(fileFormularioRepository);
+            FormularioRepositorioArquivo formularioRepositorioArquivo = new FormularioRepositorioArquivo();
+            MenuConsole mc = new MenuConsole(formularioRepositorioArquivo);
 
             mc.carregarMenu();
         }catch (Exception e) {

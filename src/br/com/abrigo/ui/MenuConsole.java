@@ -1,6 +1,6 @@
 package br.com.abrigo.ui;
 
-import br.com.abrigo.infrastructure.FileFormularioRepository;
+import br.com.abrigo.domain.repository.FormularioRepositorio;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Scanner;
 
 public class MenuConsole {
-    FileFormularioRepository fileFormularioRepository;
+    FormularioRepositorio formularioRepositorioArquivo;
     Scanner sc = new Scanner(System.in);
 
-    public MenuConsole(FileFormularioRepository fileFormularioRepository) {
-        this.fileFormularioRepository = fileFormularioRepository;
+    public MenuConsole(FormularioRepositorio formularioRepositorioArquivo) {
+        this.formularioRepositorioArquivo = formularioRepositorioArquivo;
     }
 
     public void carregarMenu () {
@@ -48,7 +48,7 @@ public class MenuConsole {
                 try{
                     List<String> respostas = new ArrayList<>();
                     System.out.print("\n");
-                    for(String p : fileFormularioRepository.carregarPerguntas()) {
+                    for(String p : formularioRepositorioArquivo.carregarPerguntas()) {
                         System.out.println(p);
                         String resposta = sc.nextLine();
                         respostas.add(resposta);

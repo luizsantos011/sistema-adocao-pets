@@ -2,7 +2,7 @@
 
 2 - Qual o tipo do pet (Cachorro/Gato)?
 
-3 - Qual o sexo do animal?
+3 - Qual o sexoPet do animal?
 
 4 - Qual endereço e bairro que ele foi encontrado?
 
