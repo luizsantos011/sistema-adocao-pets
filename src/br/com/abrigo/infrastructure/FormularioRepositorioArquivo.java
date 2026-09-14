@@ -18,7 +18,7 @@ public class FormularioRepositorioArquivo implements FormularioRepositorio {
     public List<String> carregarPerguntas() throws IOException {
         try (Stream<String> linhas = Files.lines(caminho, StandardCharsets.UTF_8)) {
             return linhas
-                    .filter(line -> !line.isBlank())
+                    .filter(linha -> !linha.isBlank())
                     .toList();
         }
     }

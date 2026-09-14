@@ -92,10 +92,6 @@ public class Pet{
         return raca;
     }
 
-    public String toString() {
-        return nome+tipo+sexo+endereco.toString()+idade+pesoAproximado+raca;
-    }
-
     public String paraFormatoArquivo() {
         String nomeExibicao = sobrenome != null ? nome + " " + sobrenome : nome;
 

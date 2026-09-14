@@ -8,6 +8,7 @@ import br.com.abrigo.domain.repository.PetRepositorio;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class PetServico {
     PetRepositorio petRepositorio;
@@ -29,6 +30,18 @@ public class PetServico {
         String raca = respostas.get(6).isBlank() ? null : respostas.get(6);
         Pet pet = new Pet(nome, sobrenome, tipo, sexo, endereco, idade, pesoAproximado, raca);
         petRepositorio.salvar(pet);
+    }
+
+    public List<Pet> buscarPets(String tipoFiltro, String filtroExtra1, String filtroExtra2) {
+        List<String> filtrosAtivos = Stream.of(filtroExtra1, filtroExtra2)
+                .filter(f -> f != null && !f.isBlank())
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .toList();
+        return petRepositorio.listarTodos().stream()
+                .filter(pet -> pet.getTipo().name().equalsIgnoreCase(tipoFiltro))
+                .filter(pet -> petContemFiltros(pet, filtrosAtivos))
+                .toList();
     }
 
     private String[] extrairPartes(String entrada, String divisor) {
@@ -72,5 +85,16 @@ public class PetServico {
         }catch (Exception e) {
             return null;
         }
+    }
+
+    private boolean petContemFiltros(Pet pet, List<String> filtrosAtivos) {
+        String dadosDoPet = String.join(" ",
+                pet.getNome(),
+                pet.getSobrenome() != null ? pet.getSobrenome() : "",
+                pet.getRaca() != null ? pet.getRaca() : "",
+                pet.getSexo() != null ? pet.getSexo().name() : "",
+                pet.getEndereco() != null ? pet.getEndereco().paraFormatoArquivo() : ""
+        ).toLowerCase();
+        return filtrosAtivos.stream().allMatch(dadosDoPet::contains);
     }
 }

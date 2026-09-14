@@ -30,10 +30,6 @@ public class Endereco {
         return ondeFoiEncontrado;
     }
 
-    public String toString() {
-        return numero+cidade+rua+ondeFoiEncontrado;
-    }
-
     public String paraFormatoArquivo() {
         return String.format("%s, %s, %s",
                 rua != null ? rua : NAO_INFORMADO,
