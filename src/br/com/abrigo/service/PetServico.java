@@ -5,10 +5,10 @@ import br.com.abrigo.domain.enums.TipoPet;
 import br.com.abrigo.domain.models.Endereco;
 import br.com.abrigo.domain.models.Pet;
 import br.com.abrigo.domain.repository.PetRepositorio;
+import br.com.abrigo.infrastructure.PetRepositorioArquivo;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class PetServico {
     PetRepositorio petRepositorio;
@@ -33,15 +33,10 @@ public class PetServico {
     }
 
     public List<Pet> buscarPets(String tipoFiltro, String filtroExtra1, String filtroExtra2) {
-        List<String> filtrosAtivos = Stream.of(filtroExtra1, filtroExtra2)
-                .filter(f -> f != null && !f.isBlank())
-                .map(String::trim)
-                .map(String::toLowerCase)
-                .toList();
-        return petRepositorio.listarTodos().stream()
-                .filter(pet -> pet.getTipo().name().equalsIgnoreCase(tipoFiltro))
-                .filter(pet -> petContemFiltros(pet, filtrosAtivos))
-                .toList();
+        if (petRepositorio instanceof PetRepositorioArquivo repo) {
+            return repo.buscarPorCriterios(tipoFiltro, filtroExtra1, filtroExtra2);
+        }
+        return petRepositorio.listarTodos();
     }
 
     private String[] extrairPartes(String entrada, String divisor) {
@@ -85,16 +80,5 @@ public class PetServico {
         }catch (Exception e) {
             return null;
         }
-    }
-
-    private boolean petContemFiltros(Pet pet, List<String> filtrosAtivos) {
-        String dadosDoPet = String.join(" ",
-                pet.getNome(),
-                pet.getSobrenome() != null ? pet.getSobrenome() : "",
-                pet.getRaca() != null ? pet.getRaca() : "",
-                pet.getSexo() != null ? pet.getSexo().name() : "",
-                pet.getEndereco() != null ? pet.getEndereco().paraFormatoArquivo() : ""
-        ).toLowerCase();
-        return filtrosAtivos.stream().allMatch(dadosDoPet::contains);
     }
 }

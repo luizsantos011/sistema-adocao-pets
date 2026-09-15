@@ -8,8 +8,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class MenuConsole {
+    private static final String VERDE = "\u001B[32m";
+    private static final String RESET = "\u001B[0m";
     private final FormularioRepositorio formularioRepositorioArquivo;
     private final PetServico petServico;
     private final Scanner sc = new Scanner(System.in);
@@ -102,14 +105,30 @@ public class MenuConsole {
         System.out.println("\n===== PETS ENCONTRADOS =====");
         for (int i = 0; i < encontrados.size(); i++) {
             Pet p = encontrados.get(i);
-            String endereco = (p.getEndereco() != null) ? p.getEndereco().paraFormatoArquivo() : "N/I";
-            String idade = (p.getIdade() != null) ? p.getIdade() + " anos" : "N/I";
-            String peso = (p.getPesoAproximado() != null) ? p.getPesoAproximado() + " kg" : "N/I";
-            String raca = (p.getRaca() != null) ? p.getRaca() : "N/I";
-            System.out.println((i + 1) + ". " + p.getNome() + " | " +
-                    p.getTipo() + " | " + p.getSexo() + " | " + endereco + " | " +
+            String nome = destacarTermos(p.getNome(), tipo, termo1, termo2);
+            String tipoPet = destacarTermos(p.getTipo() != null ? p.getTipo().toString() : "N/I", tipo, termo1, termo2);
+            String sexo = destacarTermos(p.getSexo() != null ? p.getSexo().toString() : "N/I", tipo, termo1, termo2);
+            String endereco = destacarTermos((p.getEndereco() != null) ? p.getEndereco().paraFormatoArquivo() : "N/I", tipo, termo1, termo2);
+            String idade = destacarTermos((p.getIdade() != null) ? p.getIdade() + " anos" : "N/I", tipo, termo1, termo2);
+            String peso = destacarTermos((p.getPesoAproximado() != null) ? p.getPesoAproximado() + " kg" : "N/I", tipo, termo1, termo2);
+            String raca = destacarTermos((p.getRaca() != null) ? p.getRaca() : "N/I", tipo, termo1, termo2);
+            System.out.println((i + 1) + ". " + nome + " | " +
+                    tipoPet + " | " + sexo + " | " + endereco + " | " +
                     idade + " | " + peso + " | " + raca);
         }
         System.out.println();
+    }
+
+    private String destacarTermos(String texto, String... termos) {
+        if (texto == null || texto.isBlank()) {
+            return texto;
+        }
+        String resultado = texto;
+        for (String termo : termos) {
+            if (termo != null && !termo.isBlank()) {
+                resultado = resultado.replaceAll("(?i)" + Pattern.quote(termo), VERDE + "$0" + RESET);
+            }
+        }
+        return resultado;
     }
 }
