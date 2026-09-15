@@ -47,7 +47,7 @@ public class PetRepositorioArquivo implements PetRepositorio {
                         try {
                             List<String> linhas = Files.readAllLines(caminho);
                             if (linhas.size() >= 7) {
-                                Pet pet = converterLinhasParaPet(linhas);
+                                Pet pet = converterLinhasParaPet(linhas, caminho);
                                 if (pet != null) {
                                     pets.add(pet);
                                 }
@@ -62,97 +62,7 @@ public class PetRepositorioArquivo implements PetRepositorio {
         return pets;
     }
 
-    public List<Pet> buscarPorCriterios(String tipo, String termo1, String termo2) {
-        List<Pet> petsEncontrados = new ArrayList<>();
-        Path pasta = Path.of(PASTA_DESTINO);
-        if (!Files.exists(pasta)) return petsEncontrados;
-        try (var stream = Files.list(pasta)) {
-            stream.filter(p -> p.toString().toUpperCase().endsWith(".TXT"))
-                    .forEach(caminho -> {
-                        try {
-                            String nomeArquivo = caminho.getFileName().toString();
-                            List<String> linhas = Files.readAllLines(caminho);
-                            if (linhas.size() >= 7) {
-                                Pet pet = converterLinhasParaPet(linhas);
-                                if (pet != null && atendeCriterios(pet, nomeArquivo, tipo, termo1, termo2)) {
-                                    petsEncontrados.add(pet);
-                                }
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Erro ao ler arquivo na busca: " + caminho.getFileName());
-                        }
-                    });
-        } catch (IOException e) {
-            System.err.println("Erro ao ler diretório de pets: " + e.getMessage());
-        }
-        return petsEncontrados;
-    }
-
-    private boolean atendeCriterios(Pet pet, String nomeArquivo, String tipo, String termo1, String termo2) {
-        if (tipo != null && !tipo.isBlank()) {
-            boolean tipoValido = pet.getTipo() != null && pet.getTipo().name().equalsIgnoreCase(tipo.trim());
-            boolean tipoEhDataOuTermo = extrairDataNormalizada(tipo.trim()) != null;
-            if (!tipoValido && !tipoEhDataOuTermo) {
-                return false;
-            }
-        }
-        return validarTermo(pet, nomeArquivo, tipo) &&
-                validarTermo(pet, nomeArquivo, termo1) &&
-                validarTermo(pet, nomeArquivo, termo2);
-    }
-
-    private boolean validarTermo(Pet pet, String nomeArquivo, String termo) {
-        if (termo == null || termo.isBlank()) return true;
-        String termoTrim = termo.trim();
-        if (pet.getTipo() != null && pet.getTipo().name().equalsIgnoreCase(termoTrim)) {
-            return true;
-        }
-        String dataNormalizada = extrairDataNormalizada(termoTrim);
-        if (dataNormalizada != null) {
-            return nomeArquivo.contains(dataNormalizada);
-        }
-        String t = termoTrim.toLowerCase();
-        String conteudoCompleto = (pet.getNome() + " " + pet.getRaca() + " " +
-                (pet.getEndereco() != null ? pet.getEndereco().paraFormatoArquivo() : "") + " " +
-                pet.getIdade() + " " + pet.getPesoAproximado()).toLowerCase();
-        return conteudoCompleto.contains(t) || nomeArquivo.toLowerCase().contains(t);
-    }
-
-    private String extrairDataNormalizada(String termo) {
-        if (termo == null || termo.isBlank() || termo.matches(".*[a-zA-Z].*")) return null;
-        String limpo = termo.replaceAll("[^0-9]", "");
-        if (termo.contains("/") || termo.contains("-")) {
-            String[] partes = termo.split("[/-]");
-            if (partes.length == 2) {
-                String p1 = partes[0].trim();
-                String p2 = partes[1].trim();
-                if (p1.length() <= 2 && p2.length() == 4) {
-                    return String.format("%s%02d", p2, Integer.parseInt(p1));
-                }
-                if (p1.length() == 4 && p2.length() <= 2) {
-                    return String.format("%s%02d", p1, Integer.parseInt(p2));
-                }
-            }
-        }
-        if (limpo.length() == 6) {
-            String m1 = limpo.substring(0, 2);
-            String a1 = limpo.substring(2);
-            int mes1 = Integer.parseInt(m1);
-            if (mes1 >= 1 && mes1 <= 12) return a1 + m1;
-            String a2 = limpo.substring(0, 4);
-            String m2 = limpo.substring(4);
-            int mes2 = Integer.parseInt(m2);
-            if (mes2 >= 1 && mes2 <= 12) return a2 + m2;
-        }
-        if (limpo.length() == 8) {
-            String mes = limpo.substring(2, 4);
-            String ano = limpo.substring(4);
-            return ano + mes;
-        }
-        return null;
-    }
-
-    private Pet converterLinhasParaPet(List<String> linhas) {
+    private Pet converterLinhasParaPet(List<String> linhas, Path caminhoArquivo) {
         try {
             List<String> limpas = linhas.stream()
                     .map(l -> l.replaceFirst("^\\d+\\s*-\\s*", "").trim())
@@ -166,10 +76,22 @@ public class PetRepositorioArquivo implements PetRepositorio {
             Double idade = parseIdade(limpas.get(4));
             Double peso = parseDouble(limpas.get(5));
             String raca = limpas.get(6).isBlank() || limpas.get(6).equalsIgnoreCase("não informado") ? "N/I" : limpas.get(6);
-            return new Pet(nome, sobrenome, tipo, sexo, endereco, idade, peso, raca);
+            String dataCadastro = extrairDataDoNomeArquivo(caminhoArquivo.getFileName().toString());
+            Pet pet = new Pet(nome, sobrenome, tipo, sexo, endereco, idade, peso, raca, dataCadastro);
+            System.out.println("Pet lido: " + pet.getNome() + " | Data Cadastrada: " + pet.getDataCadastro());
+            return pet;
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private String extrairDataDoNomeArquivo(String nomeArquivo) {
+        if (nomeArquivo.length() >= 8 && nomeArquivo.matches("^\\d{8}.*")) {
+            String ano = nomeArquivo.substring(0, 4);
+            String mes = nomeArquivo.substring(4, 6);
+            return mes + "/" + ano;
+        }
+        return null;
     }
 
     private Endereco parseEndereco(String entrada) {

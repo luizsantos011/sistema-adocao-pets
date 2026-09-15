@@ -4,6 +4,8 @@ import br.com.abrigo.domain.enums.SexoPet;
 import br.com.abrigo.domain.enums.TipoPet;
 
 import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.*;
 
 public class Pet{
@@ -15,10 +17,17 @@ public class Pet{
     private Double idade;
     private Double pesoAproximado;
     private String raca;
+    private String dataCadastro;
     private static final String NAO_INFORMADO = "Não informado";
 
     public Pet(String nome, String sobrenome, TipoPet tipoPet, SexoPet sexoPet, Endereco endereco,
                Double idade, Double pesoAproximado, String raca) {
+        this(nome, sobrenome, tipoPet, sexoPet, endereco, idade, pesoAproximado, raca,
+                LocalDate.now().format(DateTimeFormatter.ofPattern("MM/yyyy")));
+    }
+
+    public Pet(String nome, String sobrenome, TipoPet tipoPet, SexoPet sexoPet, Endereco endereco,
+               Double idade, Double pesoAproximado, String raca, String dataCadastro) {
         this.nome = validarNome(nome);
         this.sobrenome = validarSobrenome(sobrenome);
         this.sexo = sexoPet;
@@ -27,6 +36,7 @@ public class Pet{
         this.idade = validarIdade(idade);
         this.pesoAproximado = validarPeso(pesoAproximado);
         this.raca = validarRaca(raca);
+        this.dataCadastro = dataCadastro == null ? LocalDate.now().format(DateTimeFormatter.ofPattern("MM/yyyy")) : dataCadastro;
     }
 
     private String validarNome(String nome) {
@@ -90,6 +100,10 @@ public class Pet{
 
     public String getRaca() {
         return raca;
+    }
+
+    public String getDataCadastro() {
+        return dataCadastro;
     }
 
     public String paraFormatoArquivo() {

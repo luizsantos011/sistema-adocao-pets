@@ -5,7 +5,7 @@ import br.com.abrigo.domain.enums.TipoPet;
 import br.com.abrigo.domain.models.Endereco;
 import br.com.abrigo.domain.models.Pet;
 import br.com.abrigo.domain.repository.PetRepositorio;
-import br.com.abrigo.infrastructure.PetRepositorioArquivo;
+import br.com.abrigo.domain.specification.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,11 +32,13 @@ public class PetServico {
         petRepositorio.salvar(pet);
     }
 
-    public List<Pet> buscarPets(String tipoFiltro, String filtroExtra1, String filtroExtra2) {
-        if (petRepositorio instanceof PetRepositorioArquivo repo) {
-            return repo.buscarPorCriterios(tipoFiltro, filtroExtra1, filtroExtra2);
-        }
-        return petRepositorio.listarTodos();
+    public List<Pet> buscarPets(String tipo, String termo1, String termo2) {
+        Specification<Pet> spec = new PetPorTipoSpecification(tipo)
+                .and(new PetPorTermoGeralSpecification(termo1))
+                .and(new PetPorTermoGeralSpecification(termo2));
+        return petRepositorio.listarTodos().stream()
+                .filter(spec::ehSatisfeitoPor)
+                .toList();
     }
 
     private String[] extrairPartes(String entrada, String divisor) {
