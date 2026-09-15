@@ -41,6 +41,16 @@ public class PetServico {
                 .toList();
     }
 
+    public void atualizarPet(Pet pet, String novoEnderecoStr) {
+        if (pet == null) {
+            throw new IllegalArgumentException("O pet para atualização não pode ser nulo.");
+        }
+        if (novoEnderecoStr != null && !novoEnderecoStr.isBlank()) {
+            pet.setEndereco(parseEndereco(novoEnderecoStr));
+        }
+        petRepositorio.atualizar(pet);
+    }
+
     private String[] extrairPartes(String entrada, String divisor) {
         if (entrada == null || entrada.isBlank()) return new String[0];
         return entrada.trim().split(divisor);
@@ -50,9 +60,9 @@ public class PetServico {
         if (entrada == null || entrada.isBlank()) return null;
         String[] partes = extrairPartes(entrada, ",");
         Integer numero = (partes.length > 0 && partes[0].trim().matches("\\d+")) ? Integer.parseInt(partes[0].trim()) : null;
-        String cidade = partes.length > 1 ? partes[1].trim() : null;
-        String rua = partes.length > 2 ? partes[2].trim() : null;
-        String ondeFoiEncontrado = partes.length > 3 ? partes[3].trim() : null;
+        String cidade = partes.length > 1 && !partes[1].trim().isBlank() ? partes[1].trim() : null;
+        String rua = partes.length > 2 && !partes[2].trim().isBlank() ? partes[2].trim() : null;
+        String ondeFoiEncontrado = partes.length > 3 && !partes[3].trim().isBlank() ? partes[3].trim() : null;
         return new Endereco(numero, cidade, rua, ondeFoiEncontrado);
     }
 

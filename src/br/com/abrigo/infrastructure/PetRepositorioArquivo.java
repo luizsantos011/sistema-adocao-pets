@@ -9,14 +9,18 @@ import br.com.abrigo.domain.repository.PetRepositorio;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PetRepositorioArquivo implements PetRepositorio {
     private static final String PASTA_DESTINO = "petsCadastrados";
+    private final Map<Pet, Path> mapaPetsArquivos = new HashMap<>();
 
     @Override
     public void salvar(Pet pet) {
@@ -39,6 +43,7 @@ public class PetRepositorioArquivo implements PetRepositorio {
     @Override
     public List<Pet> listarTodos() {
         List<Pet> pets = new ArrayList<>();
+        mapaPetsArquivos.clear();
         Path pasta = Path.of(PASTA_DESTINO);
         if (!Files.exists(pasta)) return pets;
         try (var stream = Files.list(pasta)) {
@@ -50,6 +55,7 @@ public class PetRepositorioArquivo implements PetRepositorio {
                                 Pet pet = converterLinhasParaPet(linhas, caminho);
                                 if (pet != null) {
                                     pets.add(pet);
+                                    mapaPetsArquivos.put(pet, caminho);
                                 }
                             }
                         } catch (Exception e) {
@@ -62,14 +68,41 @@ public class PetRepositorioArquivo implements PetRepositorio {
         return pets;
     }
 
+    @Override
+    public void atualizar(Pet pet) {
+        if (pet == null) return;
+        Path caminhoOriginal = mapaPetsArquivos.get(pet);
+        if (caminhoOriginal != null && Files.exists(caminhoOriginal)) {
+            try {
+                Files.write(caminhoOriginal, reescreverLinhasFormulario(pet));
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao reescrever arquivo do pet", e);
+            }
+        }
+    }
+
+    private List<String> reescreverLinhasFormulario(Pet pet) {
+        String nomeCompleto = pet.getNome() + (pet.getSobrenome() != null && !pet.getSobrenome().isBlank() ? " " + pet.getSobrenome() : "");
+        return List.of(
+                "1 - " + nomeCompleto,
+                "2 - " + (pet.getTipo() != null ? pet.getTipo() : "Não informado"),
+                "3 - " + (pet.getSexo() != null ? pet.getSexo() : "Não informado"),
+                "4 - " + (pet.getEndereco() != null ? pet.getEndereco().paraFormatoArquivo() : "Não informado"),
+                "5 - " + (pet.getIdade() != null ? pet.getIdade() : "Não informado"),
+                "6 - " + (pet.getPesoAproximado() != null ? pet.getPesoAproximado() : "Não informado"),
+                "7 - " + (pet.getRaca() != null ? pet.getRaca() : "Não informado")
+        );
+    }
+
     private Pet converterLinhasParaPet(List<String> linhas, Path caminhoArquivo) {
         try {
             List<String> limpas = linhas.stream()
                     .map(l -> l.replaceFirst("^\\d+\\s*-\\s*", "").trim())
                     .toList();
-            String nomeBruto = limpas.get(0).replaceAll("(?i)não informado|n/i", "").trim();
-            String nome = nomeBruto.isEmpty() ? "Não informado" : nomeBruto;
-            String sobrenome = null;
+            String nomeLinha = limpas.get(0).replaceAll("(?i)não informado|n/i", "").trim();
+            String[] partesNome = nomeLinha.isEmpty() ? new String[0] : nomeLinha.split("\\s+");
+            String nome = partesNome.length > 0 ? partesNome[0] : "Não informado";
+            String sobrenome = partesNome.length > 1 ? String.join(" ", java.util.Arrays.copyOfRange(partesNome, 1, partesNome.length)) : null;
             TipoPet tipo = parseEnum(TipoPet.class, limpas.get(1));
             SexoPet sexo = parseEnum(SexoPet.class, limpas.get(2));
             Endereco endereco = parseEndereco(limpas.get(3));
@@ -77,9 +110,7 @@ public class PetRepositorioArquivo implements PetRepositorio {
             Double peso = parseDouble(limpas.get(5));
             String raca = limpas.get(6).isBlank() || limpas.get(6).equalsIgnoreCase("não informado") ? "N/I" : limpas.get(6);
             String dataCadastro = extrairDataDoNomeArquivo(caminhoArquivo.getFileName().toString());
-            Pet pet = new Pet(nome, sobrenome, tipo, sexo, endereco, idade, peso, raca, dataCadastro);
-            System.out.println("Pet lido: " + pet.getNome() + " | Data Cadastrada: " + pet.getDataCadastro());
-            return pet;
+            return new Pet(nome, sobrenome, tipo, sexo, endereco, idade, peso, raca, dataCadastro);
         } catch (Exception e) {
             return null;
         }

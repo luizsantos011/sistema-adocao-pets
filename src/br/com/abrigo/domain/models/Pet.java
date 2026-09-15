@@ -106,6 +106,38 @@ public class Pet{
         return dataCadastro;
     }
 
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setSobrenome(String sobrenome) {
+        this.sobrenome = sobrenome;
+    }
+
+    public void setSexo(SexoPet sexo) {
+        this.sexo = sexo;
+    }
+
+    public void setTipo(TipoPet tipo) {
+        this.tipo = tipo;
+    }
+
+    public void setEndereco(Endereco endereco) {
+        this.endereco = endereco;
+    }
+
+    public void setIdade(Double idade) {
+        this.idade = idade;
+    }
+
+    public void setPesoAproximado(Double pesoAproximado) {
+        this.pesoAproximado = pesoAproximado;
+    }
+
+    public void setRaca(String raca) {
+        this.raca = raca;
+    }
+
     public String paraFormatoArquivo() {
         String nomeExibicao = sobrenome != null ? nome + " " + sobrenome : nome;
 
